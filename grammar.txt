@@ -1,0 +1,78 @@
+#---------------------------------------
+# Statements
+#---------------------------------------
+
+stmt      : block
+          | breakStmt
+          | contStmt
+          | declStmt
+          | exprStmt
+          | ifStmt
+          | readStmt
+          | repeatStmt
+          | whileStmt
+          | writeStmt
+
+stmts     : stmts ';' stmt
+          | stmt
+
+#---------------------------------------
+
+block     : '{' stmts  [ ';' ]? '}'
+
+breakStmt   : 'break'
+
+contStmt    : 'continue'
+
+declStmt    : 'var' ID [ 'integer' | 'real' | 'string' ] [ '<-' expr  ]?
+
+exprStmt    : expr
+
+ifStmt      : 'if' expr block [ 'else' block ]?
+
+readStmt    : 'read' exprList
+
+repeatStmt  : 'repeat' block 'until' expr
+
+whileStmt   : 'while' expr block
+
+writeStmt   : 'write' exprList
+
+#---------------------------------------
+# Expressions
+#---------------------------------------
+
+expr        : prefixOpr expr
+            | expr binaryOpr expr
+            | number
+            | stringLiteral
+            | '(' expr ')'
+            | ID
+
+exprList    : exprList ',' expr
+            | expr
+
+# Prefix (unary) operators :
+#   Math      : '+' '-'
+#   Logical   : 'not'
+
+# Binary operators :
+#   Assignment    : '<-'
+#   Math          : '+' '-' '*' '/' '%' '^' '?'
+#   Relational    : '<' '<=' '>=' '>' '<>' '=='
+#   Logical       : 'and' 'or'
+
+#---------------------------------------
+# Operator precedence, lowest to highest
+#---------------------------------------
+Logical OR
+Logical AND
+Relational EQ and NE
+Relational LT, LE, GE, GT
+Math random number (?)
+Math add, subtract
+Math multiply, divide, modulus
+Math exponent
+Math prefix -, Math prefix +, Logical prefix NOT
+
+#---------------------------------------
