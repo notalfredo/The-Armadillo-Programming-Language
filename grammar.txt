@@ -12,6 +12,7 @@ stmt      : block
           | repeatStmt
           | whileStmt
           | writeStmt
+          | caseStmt
 
 stmts     : stmts ';' stmt
           | stmt
@@ -28,7 +29,7 @@ declStmt    : 'var' ID [ 'integer' | 'real' | 'string' ] [ '<-' expr  ]?
 
 exprStmt    : expr
 
-ifStmt      : 'if' expr block [ 'else' block ]?
+ifStmt      : 'if' '(' exprList '),' '(' exprList ')' block 'else' '{' caseStmts '}'
 
 readStmt    : 'read' exprList
 
@@ -37,6 +38,11 @@ repeatStmt  : 'repeat' block 'until' expr
 whileStmt   : 'while' expr block
 
 writeStmt   : 'write' exprList
+
+caseStmt    : 'case' number ':' block
+
+caseStmts   : caseStmts caseStmt
+            | caseStmt
 
 #---------------------------------------
 # Expressions
