@@ -9,9 +9,15 @@
 /* C PROGRAM CODE */
 %{
 #include <stdio.h>
+#include <iostream>
 
 #include "keywords.h"
 
+union {
+    int intVal;
+    float floatVal;
+    char* stringVal;
+} yylval;
 
 tokens isKeyword( const char *str );
 %}
@@ -27,6 +33,20 @@ ID_AFTER    {ID_FIRST}|[0-9]
 */
 
 %%
+
+[0-9]+ {
+    yylval.intVal = (int) strtol(yytext, NULL, 10); 
+    return TOKEN_LIT_INT;
+}
+
+
+[0-9]+.[0-9]+ {
+    std::cout << "->" << yytext << "<-" << std::endl;
+    yylval.floatVal = atof(yytext);
+    return TOKEN_LIT_INT;
+}
+
+
 
 
 {ID_FIRST}{ID_AFTER}* {
@@ -51,6 +71,10 @@ ID_AFTER    {ID_FIRST}|[0-9]
  */
 
 #include "keywords.h"
+
+#include <stdio.h>
+#include <iostream>
+
 
 tokens isKeyword( const char *str ) {
 
@@ -92,9 +116,6 @@ char *getFileContents( const char *fName )
 }
 
 
-
-
-
 //----------------------------------------------------------------
 int main( int argc, char *argv[] )
 {
@@ -102,7 +123,7 @@ int main( int argc, char *argv[] )
 
   switch ( argc ) {
     case 1 :
-      inStr = strdup( "fn for" );
+      inStr = strdup( "fn for 12.0" );
       break;
 
     case 2 :
@@ -130,13 +151,61 @@ int main( int argc, char *argv[] )
 
     switch ( tok ) {
 
-        case TOKEN_FUNCTION_DECL:
-            printf("TOKEN_FUNCTION_DECL\n");
+        case TOKEN_LET:
+            std::cout << "TOKEN_LET" << std::endl;
             break;
 
-        case TOKEN_FOR:
-            printf("TOKEN_FOR\n");
+        case TOKEN_ID:
+            std::cout << "TOKEN_ID" << std::endl;
             break;
+
+        case TOKEN_INTEGER:
+            std::cout << "TOKEN_INTEGER" << std::endl;
+            break;
+
+        case TOKEN_REAL:
+            std::cout << "TOKEN_REAL" << std::endl;
+            break;
+
+        case TOKEN_STRING:
+            std::cout << "TOKEN_STRING" << std::endl;
+            break;
+
+        case TOKEN_FUNCTION_DECL:
+            std::cout << "TOKEN_FUNCTION_DECL" << std::endl;
+            break;
+    
+        case TOKEN_RETURN:
+            std::cout << "TOKEN_RETURN" << std::endl;
+            break;
+
+        case TOKEN_FUNC_TYPE_RETURN:
+            std::cout << "TOKEN_FUNC_TYPE_RETURN" << std::endl;
+            break;
+
+        case TOKEN_LIT_INT:
+            std::cout << "TOKEN_LIT_INT: " << yylval.intVal  << std::endl;
+            break;
+
+        case TOKEN_LIT_REAL:
+            std::cout << "TOKEN_REAL: " << yylval.floatVal << std::endl;
+            break;
+
+        case TOKEN_LIT_STR:
+            std::cout << "TOKEN_STRING: " << yylval.stringVal << std::endl;
+            break;
+
+
+
+
+
+
+
+
+        case TOKEN_FOR:
+            std::cout << "TOKEN_FOR" << std::endl;
+            break;
+
 
         default:
           printf( "Unknown token category %d?\n", tok );

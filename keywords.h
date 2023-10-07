@@ -29,6 +29,9 @@ typedef enum tokens {
 
     //Function
     TOKEN_FUNCTION_DECL,
+    TOKEN_RETURN,
+    TOKEN_FUNC_TYPE_RETURN,
+
 
     //Lit numbers
     TOKEN_LIT_INT,
@@ -74,7 +77,6 @@ typedef enum tokens {
     TOKEN_SCOPE,
     TOKEN_CASE,
 
-    TOKEN_RETURN,
 
 } tokens;
 
