@@ -3,13 +3,18 @@
 # 2023-04-10
 #-----------------------------------------------------------------
 <<<<<<< HEAD
+<<<<<<< HEAD
 CC        = gcc
 =======
 CC       = g++
 >>>>>>> 2675d6a388412259b0ed0d7922b0cb6bcccc78e1
+=======
+CC       = g++
+>>>>>>> master
 
 SANFLAGS  =
 
+<<<<<<< HEAD
 <<<<<<< HEAD
 CFLAGS    = -g -Wall -Wextra $(SANFLAGS) -DYYDEBUG
 LDFLAGS   = $(SANFLAGS)
@@ -18,6 +23,8 @@ LDLIBS    = -lm
 NODEFILES = nodeAllocFree.c nodeDump.c nodeExprs.c nodeLeafItems.c nodeScope.c nodeStmts.c
 SRCFILES  = $(NODEFILES) semantic.c
 =======
+=======
+>>>>>>> master
 # Add -Wno-write-strings to suppress string literal warnings
 CFLAGS   = -g -Wall -Wextra -Wno-write-strings $(SANFLAGS)
 LDFLAGS  = $(SANFLAGS)
