@@ -50,22 +50,22 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
 
 // Token names (and types, if required)
   // Keyword tokens -- no attribute, so no type required.
-%token tok_INTEGER tok_REAL
-%token tok_VAR
-%token tok_READ tok_WRITE
-%token tok_BREAK tok_CONTINUE tok_REPEAT tok_WHILE tok_UNTIL
-%token tok_IF tok_ELSE
+%token TOKEN_LET TOKEN_ID
+%token TOKEN_INTEGER TOKEN_REAL TOKEN_STRING
+%token TOKEN_BREAK TOKEN_CONTINUE TOKEN_REPEAT TOKEN_WHILE 
+%token TOKEN_IF TOKEN_ELIF TOKEN_ELSE
+
 
 // Unary Operator
-%token tok_UOP_NOT
+// %token tok_UOP_NOT
 
-  // Operator tokens -- no attribute, so no type required.
+// Operator tokens -- no attribute, so no type required.
 //%token tok_???
 
   // Primitive (leaf-level) item nodes.  These token categories
   //  have attributes, so they need their type specified.
-%token <node>  tok_ID
-%token <node>  tok_INT_LIT  tok_REAL_LIT  tok_STR_LIT
+%token <node>  TOKEN_ID
+%token <node>  TOKEN_LIT_INT  TOKEN_LIT_REAL  TOKEN_LIT_STR
 
 // The nonterminal names that have a value.  A type has to be
 //  given.  (So why did yacc use "%token" for "token" but "%type"
@@ -78,7 +78,7 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
 // Precedence / associativity -- Use %left, %right, and %nonassoc
 //  to indicate associtivity of the operator.  The lines go from
 //  LOWEST precedence to HIGHEST precedence.
-%left '+' '-' tok_UOP_NOT
+%left '+' '-' // tok_UOP_NOT
 %left '/' '*' '%'
 %right '^'
 %right NEGATE POSITE PERCENT
@@ -89,7 +89,7 @@ start
   ;
 
 block
-  : '{' stmtList ';' '}'  { $$ = makeBlock( $2 ); }
+  : '{' stmtList ';' '}'      { $$ = makeBlock( $2 ); }
   | '{' '}'                   { $$ = makeBlock( NULL ); }
   ;
 
@@ -113,19 +113,22 @@ stmtList
   ;
 
 breakStmt
-  : tok_BREAK       { $$ = makeBreak(); }
+  : TOKEN_BREAK       { $$ = makeBreak(); }
   ;
 contStmt
-  : tok_CONTINUE    { $$ = makeContinue(); }
+  : TOKEN_CONTINUE    { $$ = makeContinue(); }
   ;
 
 //-- Declaration -------------------------------------------------
 declStmt
-  : tok_VAR tok_ID tok_INTEGER  {
+  : TOKEN_LET TOKEN_ID TOKEN_BOP_ASSIGN TOKEN_LIT_INT {
     $$ = makeDecl( KIND_INT,  $2, makeIntLit( 0 ) );
   }
-  | tok_VAR tok_ID tok_REAL  {
+  : TOKEN_LET TOKEN_ID TOKEN_BOP_ASSIGN TOKEN_LIT_REAL {
     $$ = makeDecl( KIND_REAL,  $2, makeRealLit( 0 ) );
+  }
+  : TOKEN_LET TOKEN_ID TOKEN_BOP_ASSIGN TOKEN_LIT_STR {
+    $$ = makeDecl( KIND_STRING,  $2, makeStringLit( 0 ) );
   }
   ;
 
@@ -136,28 +139,28 @@ exprStmt
 
 //-- If statement ---------------------------------------------
 ifStmt
-  : tok_IF expr block tok_ELSE block    { $$ = makeIf( $2, $3, $5 ); }
-  | tok_IF expr block                   { $$ = makeIf( $2, $3, makeBlock( NULL ) ); }
+  : TOKEN_IF expr block TOKEN_ELSE block    { $$ = makeIf( $2, $3, $5 ); }
+  | TOKEN_IF expr block                   { $$ = makeIf( $2, $3, makeBlock( NULL ) ); }
   ;
 
 //-- Read statement ----------------------------------------------
 readStmt
-  : tok_READ exprList       { $$ = makeRead( $2 ); }
+  : TOKEN_READ exprList       { $$ = makeRead( $2 ); }
   ;
 
 //-- Repeat statement ---------------------------------------------
 repeatStmt
-  : tok_REPEAT block tok_UNTIL expr { $$ = makeRepeat( $2, $4 ); }
+  : TOKEN_REPEAT block TOKEN_UNTIL expr { $$ = makeRepeat( $2, $4 ); }
   ;
 
 //-- While statement ---------------------------------------------
 whileStmt
-  : tok_WHILE expr block    { $$ = makeWhile( $2, $3 ); }
+  : TOKEN_WHILE expr block    { $$ = makeWhile( $2, $3 ); }
   ;
 
 //-- Write statement ---------------------------------------------
 writeStmt
-  : tok_WRITE exprList      { $$ = makeWrite( $2 ); }
+  : TOKEN_WRITE exprList      { $$ = makeWrite( $2 ); }
   ;
 
 //-- Expressions -------------------------------------------------
@@ -171,17 +174,17 @@ expr
 
 // Unary Operators
 expr
-  : tok_UOP_NOT expr        { $$ = makeUnaOp( KIND_UOP_NOT, $2 ); }
+  : TOKEN_UOP expr        { $$ = makeUnaOp( KIND_UOP_NOT, $2 ); }
   | '-' expr %prec NEGATE   { $$ = makeUnaOp( KIND_UOP_NEGATE, $1 ); }
   | '+' expr %prec POSITE   { $$ = makeUnaOp( KIND_UOP_POSITE, $1 ); }
   ;
 
 expr
   : '(' expr ')'        { $$ = $2; }
-  | tok_ID
-  | tok_INT_LIT
-  | tok_REAL_LIT
-  | tok_STR_LIT
+  | TOKEN_ID
+  | TOKEN_LIT_INT
+  | TOKEN_LIT_REAL
+  | TOKEN_LIT_STR
   ;
 
 exprList
