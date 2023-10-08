@@ -66,7 +66,8 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
 
 // Token names (and types, if required)
   // Keyword tokens -- no attribute, so no type required.
-%token TOKEN_LET TOKEN_ID
+%token TOKEN_LET
+%token TOKEN_BOP_ASSIGN
 %token TOKEN_INTEGER TOKEN_REAL TOKEN_STRING
 %token TOKEN_BREAK TOKEN_CONTINUE TOKEN_REPEAT TOKEN_WHILE 
 %token TOKEN_IF TOKEN_ELIF TOKEN_ELSE
@@ -86,7 +87,7 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
 // The nonterminal names that have a value.  A type has to be
 //  given.  (So why did yacc use "%token" for "token" but "%type"
 //  for "nonterminal"?  Because it's shorter?  Who knows?)
-%type <node>   breakStmt contStmt declStmt exprStmt ifStmt readStmt repeatStmt whileStmt writeStmt
+%type <node>   breakStmt contStmt declStmt exprStmt ifStmt whileStmt
 %type <node>   block expr exprList stmt stmtList
 
 %type <node>   epsilon
@@ -117,10 +118,10 @@ stmt
   | declStmt
   | exprStmt
   | ifStmt
-  | readStmt
-  | repeatStmt
+//  | readStmt
+//  | repeatStmt
   | whileStmt
-  | writeStmt
+//  | writeStmt
   ;
 
 stmtList
@@ -169,14 +170,14 @@ ifStmt
   ;
 
 //-- Read statement ----------------------------------------------
-readStmt
-  : TOKEN_READ exprList       { $$ = makeRead( $2 ); }
-  ;
+//readStmt
+//  : TOKEN_READ exprList       { $$ = makeRead( $2 ); }
+//  ;
 
 //-- Repeat statement ---------------------------------------------
-repeatStmt
-  : TOKEN_REPEAT block TOKEN_UNTIL expr { $$ = makeRepeat( $2, $4 ); }
-  ;
+//repeatStmt
+//  : TOKEN_REPEAT block TOKEN_UNTIL expr { $$ = makeRepeat( $2, $4 ); }
+//  ;
 
 //-- While statement ---------------------------------------------
 whileStmt
@@ -184,9 +185,9 @@ whileStmt
   ;
 
 //-- Write statement ---------------------------------------------
-writeStmt
-  : TOKEN_WRITE exprList      { $$ = makeWrite( $2 ); }
-  ;
+//writeStmt
+//  : TOKEN_WRITE exprList      { $$ = makeWrite( $2 ); }
+//  ;
 
 //-- Expressions -------------------------------------------------
 
@@ -200,9 +201,9 @@ expr
 
 // Unary Operators
 expr
-  : TOKEN_UOP expr          { $$ = makeUnaOp( KIND_UOP_NOT, $2 ); }
-  | '-' expr %prec NEGATE   { $$ = makeUnaOp( KIND_UOP_NEGATE, $1 ); }
-  | '+' expr %prec POSITE   { $$ = makeUnaOp( KIND_UOP_POSITE, $1 ); }
+//  : TOKEN_UOP expr          { $$ = makeUnaOp( KIND_UOP_NOT, $2 ); }
+  : '-' expr %prec NEGATE   { $$ = makeUnaOp( KIND_UOP_NEGATE, $2 ); }
+//  | '+' expr %prec POSITE   { $$ = makeUnaOp( KIND_UOP_POSITE, $2 ); }
   ;
 
 expr
