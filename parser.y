@@ -1,6 +1,5 @@
 //---- DEFINITIONS  ----------------------------------------------
 %{
-#include "node.h"
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -23,11 +22,11 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
 // With reentrancy, we have to pass around all of the scanner
 //  state.  The type of a pointer to an instance of that state is
 //  called yyscan_t.
-// %code requires {
-// #include "node.h"
-// 
-//   typedef void *yyscan_t;
-// }
+%code requires {
+  #include "node.h"
+ 
+   typedef void *yyscan_t;
+}
 
 // Add the following parameters to the lexer and parser calls.
 //  This is necessary when we're getting rid of global references.
