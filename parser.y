@@ -30,8 +30,8 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
 
 // Add the following parameters to the lexer and parser calls.
 //  This is necessary when we're getting rid of global references.
-// %lex-param   { yyscan_t scanner }
-// %parse-param { yyscan_t scanner }
+%lex-param   { yyscan_t scanner }
+%parse-param { yyscan_t scanner }
 %parse-param { void **result }
 
 // Generate a header file with the token names, union of possible
@@ -57,8 +57,7 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
     NodeBlock                              *block;
     NodeExpressionStatement                *exprStmt;
     NodeReturnStatement                    *returnStmt;
-    std::vector<NodeVariableDeclaration*>  *varvec;
-    std::vector<NodeFunctionDeclaration*>  *fnvec;
+    NodeVariableDeclaration                *varvec;
     NodeIfDeclaration                      *ifDecl;
     NodeElifDeclaration                    *ElifDecl;
 }
@@ -70,6 +69,7 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
 %token TOKEN_INTEGER TOKEN_REAL TOKEN_STRING
 %token TOKEN_BREAK TOKEN_CONTINUE TOKEN_REPEAT TOKEN_WHILE 
 %token TOKEN_IF TOKEN_ELIF TOKEN_ELSE
+%token '+' '-' '*' '/' 
 
 
 // Unary Operator
@@ -86,8 +86,8 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
 // The nonterminal names that have a value.  A type has to be
 //  given.  (So why did yacc use "%token" for "token" but "%type"
 //  for "nonterminal"?  Because it's shorter?  Who knows?)
-//    %type <node>   breakStmt contStmt declStmt exprStmt ifStmt readStmt repeatStmt whileStmt writeStmt
-//    %type <node>   block expr exprList stmt stmtList
+// %type <node>   breakStmt contStmt declStmt exprStmt ifStmt readStmt repeatStmt whileStmt writeStmt
+%type <node>   block expr exprList exprStmt stmt stmtList ifStmt declStmt
 
 %type <node>   epsilon
 
@@ -112,15 +112,9 @@ block
 //-- Statements --------------------------------------------------
 stmt
   : block
-  | breakStmt
-  | contStmt
   | declStmt
   | exprStmt
   | ifStmt
-//  | readStmt
-//  | repeatStmt
-  | whileStmt
-//  | writeStmt
   ;
 
 stmtList
@@ -138,28 +132,28 @@ stmtList
 //-- Declaration -------------------------------------------------
 declStmt
   : TOKEN_LET TOKEN_ID ':' TOKEN_INTEGER TOKEN_BOP_ASSIGN TOKEN_LIT_INT {
-    $$ = new NodeVariableDeclaration( *$2, *$4, $6 );
+    $$ = new NodeVariableDeclaration( *$2, TOKEN_INTEGER, $6 );
   }
   | TOKEN_LET TOKEN_ID ':' TOKEN_REAL TOKEN_BOP_ASSIGN TOKEN_LIT_REAL {
-    $$ = new NodeVariableDeclaration( *$2, *$4, $6 );
+    $$ = new NodeVariableDeclaration( *$2, TOKEN_REAL, $6 );
   }
   | TOKEN_LET TOKEN_ID ':' TOKEN_STRING TOKEN_BOP_ASSIGN TOKEN_LIT_STR {
-    $$ = new NodeVariableDeclaration( *$2, *$4, $6 );
+    $$ = new NodeVariableDeclaration( *$2,TOKEN_STRING, $6 );
   }
   | TOKEN_LET TOKEN_ID ':' TOKEN_INTEGER {
-    $$ = new NodeVariableDeclaration( *$2, *$4, NULL );
+    $$ = new NodeVariableDeclaration( *$2, TOKEN_INTEGER, NULL );
   }
   | TOKEN_LET TOKEN_ID ':' TOKEN_REAL {
-    $$ = new NodeVariableDeclaration( *$2, *$4, NULL );
+    $$ = new NodeVariableDeclaration( *$2, TOKEN_REAL, NULL );
   }
   | TOKEN_LET TOKEN_ID ':' TOKEN_STRING {
-    $$ = new NodeVariableDeclaration( *$2, *$4, NULL );
+    $$ = new NodeVariableDeclaration( *$2, TOKEN_STRING, NULL );
   }
   ;
 
 //-- Expr statement ---------------------------------------------
 exprStmt
-  : expr    { $$ = makeExpr( $1 ); }
+  : expr    { $$ = new NodeExpressionStatement( *$1 ); }
   ;
 
 //-- If statement ---------------------------------------------
@@ -192,18 +186,18 @@ ifStmt
 
 // Binary Operators
 expr
-  : expr '+' expr           { $$ = new NodeBinaryOperator( *$1, $2, *$3 ); }
-  | expr '-' expr           { $$ = new NodeBinaryOperator( *$1, $2, *$3 ); }
-  | expr '*' expr           { $$ = new NodeBinaryOperator( *$1, $2, *$3 ); }
-  | expr '/' expr           { $$ = new NodeBinaryOperator( *$1, $2, *$3 ); }
+  : expr '+' expr           { $$ = new NodeBinaryOperator( *$1, '+', *$3 ); }
+  | expr '-' expr           { $$ = new NodeBinaryOperator( *$1, '-', *$3 ); }
+  | expr '*' expr           { $$ = new NodeBinaryOperator( *$1, '*', *$3 ); }
+  | expr '/' expr           { $$ = new NodeBinaryOperator( *$1, '/', *$3 ); }
   ;
 
 // Unary Operators
-expr
+//  expr
 //  : TOKEN_UOP expr          { $$ = makeUnaOp( KIND_UOP_NOT, $2 ); }
-  : '-' expr %prec NEGATE   { $$ = makeUnaOp( KIND_UOP_NEGATE, $2 ); }
+//  : '-' expr %prec NEGATE   { $$ = makeUnaOp( KIND_UOP_NEGATE, $2 ); }
 //  | '+' expr %prec POSITE   { $$ = makeUnaOp( KIND_UOP_POSITE, $2 ); }
-  ;
+//  ;
 
 expr
   : '(' expr ')'            { $$ = $2; }
