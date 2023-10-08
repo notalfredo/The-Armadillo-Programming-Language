@@ -12,27 +12,17 @@ extern void printfLoc( YYLTYPE loc, char *fmt, ... );
 extern void fprintLoc( FILE *fp, YYLTYPE loc );
 %}
 
-// Make the parser reentrant so we don't have those pesky global
-//  data items.  This affects the signature to the yyerror
-//  routine.  We also have to supply additional info to the lexer
-//  and parser when we do this.  See the following %lex-param,
-//  %parse-param definitions.
 %define api.pure full
 
 %code provides
 {
-  // Tell Flex the expected prototype of yylex.
 #define YY_DECL                                 \
   int yylex (YYSTYPE* yylval, YYLTYPE *yylloc, void* scanner)
   YY_DECL;
 }
 
-// With reentrancy, we have to pass around all of the scanner
-//  state.  The type of a pointer to an instance of that state is
-//  called yyscan_t.
 %code requires {
 #include "node.h"
-
   typedef void *yyscan_t;
 }
 
@@ -164,9 +154,6 @@ expr
   ;
 
 %% //---- USER CODE ----------------------------------------------
-
-// Prints an error message.  Automatically called by the
-//  generated parser when necessary.
 void yyerror(  YYLTYPE *llocp, void *_scanner, void *_result, const char *msg )
 {
   (void) _scanner;      // Not used at present
@@ -175,7 +162,6 @@ void yyerror(  YYLTYPE *llocp, void *_scanner, void *_result, const char *msg )
   printfLoc( *llocp, "Error: %s\n", msg );
 }
 
-// Prints a formated message with a location at the front.
 void printfLoc( YYLTYPE loc, char *fmt, ... )
 {
   fprintLoc( stdout, loc );
@@ -186,23 +172,15 @@ void printfLoc( YYLTYPE loc, char *fmt, ... )
   vprintf( fmt, ap );
   va_end( ap );
 }
-//  
-//  // Prints a location in a minimal way.
 void fprintLoc( FILE *fp, YYLTYPE loc )
 {
   if ( loc.first_line == loc.last_line ) {
     if ( loc.first_column == loc.last_column ) {
-      //  <line>:<col>
-      //    Location is on one line and is only one character wide.
       fprintf( fp, "%d(%d)", loc.first_line, loc.first_column );
     } else {
-      //  <line>:<col>-<col>
-      //    Location is on one line but is multiple characters wide.
       fprintf( fp, "%d(%d-%d)", loc.first_line, loc.first_column, loc.last_column );
     }
   } else {
-    //  <line>:<col>-<line>:<col>
-    //    Location is across more than one line.
     fprintf( fp, "%d(%d)-%d(%d)",
       loc.first_line, loc.first_column,
       loc.last_line, loc.last_column );
