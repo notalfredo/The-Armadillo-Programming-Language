@@ -57,14 +57,35 @@ static Type *typeOf(const std::string type) {
 	return Type::getVoidTy(MyContext);
 }
 
+/* -- Code Generation -- */
+
+Value* NodeInteger::codeGen(CodeGenContext& context){
+	std::cout << "Creating integer: " << value << endl;
+	return ConstantInt::get(Type::getInt64Ty(MyContext), value, true);
+}
+
+Value* NodeDouble::codeGen(CodeGenContext& context){
+	std::cout << "Creating double: " << value << endl;
+	return ConstantFP::get(Type::getDoubleTy(MyContext), value);
+}
+
+Value* NodeIdentifier::codeGen(CodeGenContext& context){
+	std::cout << "Creating identifier reference: " << name << endl;
 
 
+    llvm::Value* valueFound = context.locals();
 
+	if (valueFound == NULL) {
+		std::cerr << "Undeclared variable " << name << endl;
+		return NULL;
+	}
 
-
-
-
-
-
-
-
+	// return nullptr;  
+	return new LoadInst(
+            valueFound->getType(),
+            valueFound,
+            name,
+            false,
+            context.currentBlock()
+    );
+}
