@@ -65,7 +65,8 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
 
 // Token names (and types, if required)
   // Keyword tokens -- no attribute, so no type required.
-%token TOKEN_LET TOKEN_ID
+%token TOKEN_LET
+%token TOKEN_BOP_ASSIGN
 %token TOKEN_INTEGER TOKEN_REAL TOKEN_STRING
 %token TOKEN_BREAK TOKEN_CONTINUE TOKEN_REPEAT TOKEN_WHILE 
 %token TOKEN_IF TOKEN_ELIF TOKEN_ELSE
@@ -116,10 +117,10 @@ stmt
   | declStmt
   | exprStmt
   | ifStmt
-  | readStmt
-  | repeatStmt
+//  | readStmt
+//  | repeatStmt
   | whileStmt
-  | writeStmt
+//  | writeStmt
   ;
 
 stmtList
@@ -195,6 +196,13 @@ expr
   | expr '-' expr           { $$ = new NodeBinaryOperator( *$1, $2, *$3 ); }
   | expr '*' expr           { $$ = new NodeBinaryOperator( *$1, $2, *$3 ); }
   | expr '/' expr           { $$ = new NodeBinaryOperator( *$1, $2, *$3 ); }
+  ;
+
+// Unary Operators
+expr
+//  : TOKEN_UOP expr          { $$ = makeUnaOp( KIND_UOP_NOT, $2 ); }
+  : '-' expr %prec NEGATE   { $$ = makeUnaOp( KIND_UOP_NEGATE, $2 ); }
+//  | '+' expr %prec POSITE   { $$ = makeUnaOp( KIND_UOP_POSITE, $2 ); }
   ;
 
 expr
