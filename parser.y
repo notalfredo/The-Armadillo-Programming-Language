@@ -19,6 +19,14 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
 //  %parse-param definitions.
 %define api.pure full
 
+%code provides
+{
+  // Tell Flex the expected prototype of yylex.
+#define YY_DECL                                 \
+  int yylex (YYSTYPE* yylval, YYLTYPE *yylloc, void* scanner)
+  YY_DECL;
+}
+
 // With reentrancy, we have to pass around all of the scanner
 //  state.  The type of a pointer to an instance of that state is
 //  called yyscan_t.
