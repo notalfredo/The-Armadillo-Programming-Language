@@ -1,5 +1,6 @@
 //---- DEFINITIONS  ----------------------------------------------
 %{
+#include "node.h"
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -22,11 +23,11 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
 // With reentrancy, we have to pass around all of the scanner
 //  state.  The type of a pointer to an instance of that state is
 //  called yyscan_t.
-%code requires {
-#include "node.h"
-
-  typedef void *yyscan_t;
-}
+// %code requires {
+// #include "node.h"
+// 
+//   typedef void *yyscan_t;
+// }
 
 // Add the following parameters to the lexer and parser calls.
 //  This is necessary when we're getting rid of global references.
@@ -45,7 +46,22 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
 // The union of all possible attributes that can be returned by
 //  any category of token.
 %union {
-  Node *node;
+    Node                    *node;
+    NodeStatement           *stmt;
+    NodeExpression          *expr;
+    NodeInteger             *int;
+    NodeDouble              *double;
+    NodeIdentifier          *id;
+    NodeMethodCall          *methodCall;
+    NodeBinaryOperator      *bop;
+    NodeAssignment          *assignment;
+    NodeBlock               *block;
+    NodeExpressionStatement *exprStmt;
+    NodeReturnStatement     *returnStmt;
+    NodeVariableDeclaration *varDecl;
+    NodeFunctionDeclaration *fnDecl;
+    NodeIfDeclaration       *ifDecl;
+    NodeElifDeclaration     *ElifDecl;
 }
 
 // Token names (and types, if required)
@@ -62,8 +78,8 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
 // Operator tokens -- no attribute, so no type required.
 //%token tok_???
 
-  // Primitive (leaf-level) item nodes.  These token categories
-  //  have attributes, so they need their type specified.
+// Primitive (leaf-level) item nodes.  These token categories
+//  have attributes, so they need their type specified.
 %token <node>  TOKEN_ID
 %token <node>  TOKEN_LIT_INT  TOKEN_LIT_REAL  TOKEN_LIT_STR
 
@@ -149,7 +165,7 @@ exprStmt
 //-- If statement ---------------------------------------------
 ifStmt
   : TOKEN_IF expr block TOKEN_ELSE block    { $$ = makeIf( $2, $3, $5 ); }
-  | TOKEN_IF expr block                   { $$ = makeIf( $2, $3, makeBlock( NULL ) ); }
+  | TOKEN_IF expr block                     { $$ = makeIf( $2, $3, makeBlock( NULL ) ); }
   ;
 
 //-- Read statement ----------------------------------------------
@@ -184,7 +200,7 @@ expr
 
 // Unary Operators
 expr
-  : TOKEN_UOP expr        { $$ = makeUnaOp( KIND_UOP_NOT, $2 ); }
+  : TOKEN_UOP expr          { $$ = makeUnaOp( KIND_UOP_NOT, $2 ); }
   | '-' expr %prec NEGATE   { $$ = makeUnaOp( KIND_UOP_NEGATE, $1 ); }
   | '+' expr %prec POSITE   { $$ = makeUnaOp( KIND_UOP_POSITE, $1 ); }
   ;
