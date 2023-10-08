@@ -1,6 +1,5 @@
 //---- DEFINITIONS  ----------------------------------------------
 %{
-#include "node.h"
 #include <stdarg.h>
 #include <stdio.h>
 
@@ -23,16 +22,16 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
 // With reentrancy, we have to pass around all of the scanner
 //  state.  The type of a pointer to an instance of that state is
 //  called yyscan_t.
-// %code requires {
-// #include "node.h"
-// 
-//   typedef void *yyscan_t;
-// }
+%code requires {
+#include "node.h"
+
+  typedef void *yyscan_t;
+}
 
 // Add the following parameters to the lexer and parser calls.
 //  This is necessary when we're getting rid of global references.
-%lex-param   { yyscan_t scanner }
-%parse-param { yyscan_t scanner }
+// %lex-param   { yyscan_t scanner }
+// %parse-param { yyscan_t scanner }
 %parse-param { void **result }
 
 // Generate a header file with the token names, union of possible
@@ -46,22 +45,22 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
 // The union of all possible attributes that can be returned by
 //  any category of token.
 %union {
-    Node                    *node;
-    NodeStatement           *stmt;
-    NodeExpression          *expr;
-    NodeInteger             *int;
-    NodeDouble              *double;
-    NodeIdentifier          *id;
-    NodeMethodCall          *methodCall;
-    NodeBinaryOperator      *bop;
-    NodeAssignment          *assignment;
-    NodeBlock               *block;
-    NodeExpressionStatement *exprStmt;
-    NodeReturnStatement     *returnStmt;
-    NodeVariableDeclaration *varDecl;
-    NodeFunctionDeclaration *fnDecl;
-    NodeIfDeclaration       *ifDecl;
-    NodeElifDeclaration     *ElifDecl;
+    Node                                   *node;
+    NodeStatement                          *stmt;
+    NodeExpression                         *expr;
+    NodeInteger                            *intVal;
+    NodeDouble                             *doubleVal;
+    NodeIdentifier                         *id;
+    NodeMethodCall                         *methodCall;
+    NodeBinaryOperator                     *bop;
+    NodeAssignment                         *assignment;
+    NodeBlock                              *block;
+    NodeExpressionStatement                *exprStmt;
+    NodeReturnStatement                    *returnStmt;
+    std::vector<NodeVariableDeclaration*>  *varvec;
+    std::vector<NodeFunctionDeclaration*>  *fnvec;
+    NodeIfDeclaration                      *ifDecl;
+    NodeElifDeclaration                    *ElifDecl;
 }
 
 // Token names (and types, if required)
@@ -86,8 +85,8 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
 // The nonterminal names that have a value.  A type has to be
 //  given.  (So why did yacc use "%token" for "token" but "%type"
 //  for "nonterminal"?  Because it's shorter?  Who knows?)
-%type <node>   breakStmt contStmt declStmt exprStmt ifStmt readStmt repeatStmt whileStmt writeStmt
-%type <node>   block expr exprList stmt stmtList
+//    %type <node>   breakStmt contStmt declStmt exprStmt ifStmt readStmt repeatStmt whileStmt writeStmt
+//    %type <node>   block expr exprList stmt stmtList
 
 %type <node>   epsilon
 
@@ -105,8 +104,8 @@ start
   ;
 
 block
-  : '{' stmtList ';' '}'      { $$ = makeBlock( $2 ); }
-  | '{' '}'                   { $$ = makeBlock( NULL ); }
+  : '{' stmtList ';' '}'      { $$ =  $2; }
+  | '{' '}'                   { $$ = new NodeBlock(); }
   ;
 
 //-- Statements --------------------------------------------------
@@ -124,36 +123,36 @@ stmt
   ;
 
 stmtList
-  : stmt
-  | stmtList ';' stmt { $$ = appendToNodeList( $1, $3 ); }
+  : stmt              { $$ = new NodeBlock(); $$->statements.push_back($<stmt>1); }
+  | stmtList ';' stmt { $1->statements.push_back($<stmt>2); }
   ;
 
-breakStmt
-  : TOKEN_BREAK       { $$ = makeBreak(); }
-  ;
-contStmt
-  : TOKEN_CONTINUE    { $$ = makeContinue(); }
-  ;
+// breakStmt
+//   : TOKEN_BREAK       { $$ = makeBreak(); }
+//   ;
+// contStmt
+//   : TOKEN_CONTINUE    { $$ = makeContinue(); }
+//   ;
 
 //-- Declaration -------------------------------------------------
 declStmt
   : TOKEN_LET TOKEN_ID ':' TOKEN_INTEGER TOKEN_BOP_ASSIGN TOKEN_LIT_INT {
-    $$ = makeDecl( KIND_INT,  $2, makeIntLit( $6 ) );
+    $$ = new NodeVariableDeclaration( *$1, *$2, $4 );
   }
   | TOKEN_LET TOKEN_ID ':' TOKEN_REAL TOKEN_BOP_ASSIGN TOKEN_LIT_REAL {
-    $$ = makeDecl( KIND_REAL,  $2, makeRealLit( $6 ) );
+    $$ = new NodeVariableDeclaration( *$1, *$2, $4 );
   }
   | TOKEN_LET TOKEN_ID ':' TOKEN_STRING TOKEN_BOP_ASSIGN TOKEN_LIT_STR {
-    $$ = makeDecl( KIND_STRING,  $2, makeStringLit( $6 ) );
+    $$ = new NodeVariableDeclaration( *$1, *$2, $4 );
   }
   | TOKEN_LET TOKEN_ID ':' TOKEN_INTEGER {
-    $$ = makeDecl( KIND_INT,  $2, makeIntLit( 0 ) );
+    $$ = new NodeVariableDeclaration( *$1, *$2, $4 );
   }
   | TOKEN_LET TOKEN_ID ':' TOKEN_REAL {
-    $$ = makeDecl( KIND_REAL,  $2, makeRealLit( 0 ) );
+    $$ = new NodeVariableDeclaration( *$1, *$2, $4 );
   }
   | TOKEN_LET TOKEN_ID ':' TOKEN_STRING {
-    $$ = makeDecl( KIND_STRING,  $2, makeStringLit( 0 ) );
+    $$ = new NodeVariableDeclaration( *$1, *$2, $4 );
   }
   ;
 
@@ -164,59 +163,60 @@ exprStmt
 
 //-- If statement ---------------------------------------------
 ifStmt
-  : TOKEN_IF expr block TOKEN_ELSE block    { $$ = makeIf( $2, $3, $5 ); }
-  | TOKEN_IF expr block                     { $$ = makeIf( $2, $3, makeBlock( NULL ) ); }
+  : TOKEN_IF expr block TOKEN_ELSE block    { $$ = new NodeIfDeclaration( $2, $3, $5 ); }
+  | TOKEN_IF expr block                     { $$ = new NodeIfDeclaration( $2, $3, NULL ); }
   ;
 
 //-- Read statement ----------------------------------------------
-readStmt
-  : TOKEN_READ exprList       { $$ = makeRead( $2 ); }
-  ;
+//  readStmt
+//    : TOKEN_READ exprList       { $$ = makeRead( $2 ); }
+//    ;
 
 //-- Repeat statement ---------------------------------------------
-repeatStmt
-  : TOKEN_REPEAT block TOKEN_UNTIL expr { $$ = makeRepeat( $2, $4 ); }
-  ;
+//  repeatStmt
+//    : TOKEN_REPEAT block TOKEN_UNTIL expr { $$ = makeRepeat( $2, $4 ); }
+//    ;
 
 //-- While statement ---------------------------------------------
-whileStmt
-  : TOKEN_WHILE expr block    { $$ = makeWhile( $2, $3 ); }
-  ;
+// whileStmt
+//   : TOKEN_WHILE expr block    { $$ = makeWhile( $2, $3 ); }
+//   ;
 
 //-- Write statement ---------------------------------------------
-writeStmt
-  : TOKEN_WRITE exprList      { $$ = makeWrite( $2 ); }
-  ;
+//  writeStmt
+//    : TOKEN_WRITE exprList      { $$ = makeWrite( $2 ); }
+//    ;
 
 //-- Expressions -------------------------------------------------
 
 // Binary Operators
 expr
-  : expr '+' expr       { $$ = makeBinOp( KIND_BOP_ADD, $1, $3 ); }
-  | expr '-' expr       { $$ = makeBinOp( KIND_BOP_SUB, $1, $3 ); }
-  | expr '*' expr       { $$ = makeBinOp( KIND_BOP_MUL, $1, $3 ); }
-  | expr '/' expr       { $$ = makeBinOp( KIND_BOP_DIV, $1, $3 ); }
-  ;
-
-// Unary Operators
-expr
-  : TOKEN_UOP expr          { $$ = makeUnaOp( KIND_UOP_NOT, $2 ); }
-  | '-' expr %prec NEGATE   { $$ = makeUnaOp( KIND_UOP_NEGATE, $1 ); }
-  | '+' expr %prec POSITE   { $$ = makeUnaOp( KIND_UOP_POSITE, $1 ); }
+  : expr '+' expr           { $$ = new NodeBinaryOperator( *$1, $2, *$3 ); }
+  | expr '-' expr           { $$ = new NodeBinaryOperator( *$1, $2, *$3 ); }
+  | expr '*' expr           { $$ = new NodeBinaryOperator( *$1, $2, *$3 ); }
+  | expr '/' expr           { $$ = new NodeBinaryOperator( *$1, $2, *$3 ); }
   ;
 
 expr
-  : '(' expr ')'        { $$ = $2; }
+  : '(' expr ')'            { $$ = $2; }
   | TOKEN_ID
   | TOKEN_LIT_INT
   | TOKEN_LIT_REAL
   | TOKEN_LIT_STR
   ;
 
-exprList
-  : exprList ',' expr { $$ = appendToNodeList( $1, $3 ); }
-  | expr
-  ;
+// Unary Operators
+// expr
+//   : TOKEN_UOP expr          { $$ = makeUnaOp( KIND_UOP_NOT, $2 ); }
+//   | '-' expr %prec NEGATE   { $$ = makeUnaOp( KIND_UOP_NEGATE, $1 ); }
+//   | '+' expr %prec POSITE   { $$ = makeUnaOp( KIND_UOP_POSITE, $1 ); }
+//   ;
+
+
+// exprList
+//   : exprList ',' expr       { $$ = appendToNodeList( $1, $3 ); }
+//   | expr
+//   ;
 
 //-- Epsilon -----------------------------------------------------
 epsilon : { $$ = NULL; } ;
@@ -245,8 +245,8 @@ void printfLoc( YYLTYPE loc, char *fmt, ... )
   vprintf( fmt, ap );
   va_end( ap );
 }
-
-// Prints a location in a minimal way.
+//  
+//  // Prints a location in a minimal way.
 void fprintLoc( FILE *fp, YYLTYPE loc )
 {
   if ( loc.first_line == loc.last_line ) {
