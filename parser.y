@@ -36,28 +36,22 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
   typedef void *yyscan_t;
 }
 
-// Add the following parameters to the lexer and parser calls.
-//  This is necessary when we're getting rid of global references.
 %lex-param   { yyscan_t scanner }
 %parse-param { yyscan_t scanner }
 %parse-param { void **result }
 
-// Generate a header file with the token names, union of possible
-//  attributes, etc.  (This header will be included by the lexer.)
 %defines "parser.tab.h"
 
-// Enable the use of yylloc.  In the rules below, we get location
-//  information via the '@' marker.
 %locations
 
-// The union of all possible attributes that can be returned by
-//  any category of token.
 %union {
     Node                                   *node;
     NodeStatement                          *stmt;
+    StatementList                          *stmtList;
     NodeExpression                         *expr;
     NodeInteger                            *intVal;
     NodeDouble                             *doubleVal;
+    NodeString                             *stringVal;
     NodeIdentifier                         *id;
     NodeMethodCall                         *methodCall;
     NodeBinaryOperator                     *bop;
@@ -65,13 +59,11 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
     NodeBlock                              *block;
     NodeExpressionStatement                *exprStmt;
     NodeReturnStatement                    *returnStmt;
-    NodeVariableDeclaration                *varvec;
+    NodeVariableDeclaration                *varDecl;
     NodeIfDeclaration                      *ifDecl;
     NodeElifDeclaration                    *ElifDecl;
 }
 
-// Token names (and types, if required)
-  // Keyword tokens -- no attribute, so no type required.
 %token TOKEN_LET
 %token TOKEN_BOP_ASSIGN
 %token TOKEN_INTEGER TOKEN_REAL TOKEN_STRING
@@ -79,29 +71,19 @@ extern void fprintLoc( FILE *fp, YYLTYPE loc );
 %token TOKEN_IF TOKEN_ELIF TOKEN_ELSE
 %token '+' '-' '*' '/' 
 
+%token <id>         TOKEN_ID
+%token <intVal>     TOKEN_LIT_INT 
+%token <doubleVal>  TOKEN_LIT_REAL 
+%token <stringVal>  TOKEN_LIT_STR
 
-// Unary Operator
-// %token tok_UOP_NOT
+%type <block>    block
+%type <expr>     expr
+%type <stmt>     stmt
+%type <stmtList> stmtList
+%type <exprStmt> exprStmt
+%type <ifDecl>   ifStmt
+%type <varDecl>  declStmt
 
-// Operator tokens -- no attribute, so no type required.
-//%token tok_???
-
-// Primitive (leaf-level) item nodes.  These token categories
-//  have attributes, so they need their type specified.
-%token <node>  TOKEN_ID
-%token <node>  TOKEN_LIT_INT  TOKEN_LIT_REAL  TOKEN_LIT_STR
-
-// The nonterminal names that have a value.  A type has to be
-//  given.  (So why did yacc use "%token" for "token" but "%type"
-//  for "nonterminal"?  Because it's shorter?  Who knows?)
-// %type <node>   breakStmt contStmt declStmt exprStmt ifStmt readStmt repeatStmt whileStmt writeStmt
-%type <node>   block expr exprList exprStmt stmt stmtList ifStmt declStmt
-
-%type <node>   epsilon
-
-// Precedence / associativity -- Use %left, %right, and %nonassoc
-//  to indicate associtivity of the operator.  The lines go from
-//  LOWEST precedence to HIGHEST precedence.
 %left '+' '-' // tok_UOP_NOT
 %left '/' '*' '%'
 %right '^'
@@ -129,13 +111,6 @@ stmtList
   : stmt              { $$ = new NodeBlock(); $$->StmtList.push_back($<stmt>1); }
   | stmtList ';' stmt { $1->StmtList.push_back($<stmt>2); }
   ;
-
-// breakStmt
-//   : TOKEN_BREAK       { $$ = makeBreak(); }
-//   ;
-// contStmt
-//   : TOKEN_CONTINUE    { $$ = makeContinue(); }
-//   ;
 
 //-- Declaration -------------------------------------------------
 declStmt
@@ -170,26 +145,6 @@ ifStmt
   | TOKEN_IF expr block                     { $$ = new NodeIfDeclaration( $2, $3, NULL ); }
   ;
 
-//-- Read statement ----------------------------------------------
-//  readStmt
-//    : TOKEN_READ exprList       { $$ = makeRead( $2 ); }
-//    ;
-
-//-- Repeat statement ---------------------------------------------
-//  repeatStmt
-//    : TOKEN_REPEAT block TOKEN_UNTIL expr { $$ = makeRepeat( $2, $4 ); }
-//    ;
-
-//-- While statement ---------------------------------------------
-// whileStmt
-//   : TOKEN_WHILE expr block    { $$ = makeWhile( $2, $3 ); }
-//   ;
-
-//-- Write statement ---------------------------------------------
-//  writeStmt
-//    : TOKEN_WRITE exprList      { $$ = makeWrite( $2 ); }
-//    ;
-
 //-- Expressions -------------------------------------------------
 
 // Binary Operators
@@ -200,13 +155,6 @@ expr
   | expr '/' expr           { $$ = new NodeBinaryOperator( *$1, '/', *$3 ); }
   ;
 
-// Unary Operators
-//  expr
-//  : TOKEN_UOP expr          { $$ = makeUnaOp( KIND_UOP_NOT, $2 ); }
-//  : '-' expr %prec NEGATE   { $$ = makeUnaOp( KIND_UOP_NEGATE, $2 ); }
-//  | '+' expr %prec POSITE   { $$ = makeUnaOp( KIND_UOP_POSITE, $2 ); }
-//  ;
-
 expr
   : '(' expr ')'            { $$ = $2; }
   | TOKEN_ID
@@ -214,23 +162,6 @@ expr
   | TOKEN_LIT_REAL
   | TOKEN_LIT_STR
   ;
-
-// Unary Operators
-// expr
-//   : TOKEN_UOP expr          { $$ = makeUnaOp( KIND_UOP_NOT, $2 ); }
-//   | '-' expr %prec NEGATE   { $$ = makeUnaOp( KIND_UOP_NEGATE, $1 ); }
-//   | '+' expr %prec POSITE   { $$ = makeUnaOp( KIND_UOP_POSITE, $1 ); }
-//   ;
-
-
-// exprList
-//   : exprList ',' expr       { $$ = appendToNodeList( $1, $3 ); }
-//   | expr
-//   ;
-
-//-- Epsilon -----------------------------------------------------
-epsilon : { $$ = NULL; } ;
-
 
 %% //---- USER CODE ----------------------------------------------
 
