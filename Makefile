@@ -11,8 +11,8 @@ LDLIBS    = -lm
 	$(CC) $(CFLAGS) -c $^
 
 #-----------------------------------------------------------------
-frontEnd : token.l parser.y main.c $(SRCFILES)
-	flex --outfile=lexer.yy.c token.l
+frontEnd : tokens.l parser.y $(SRCFILES)
+	flex --outfile=lexer.yy.h tokens.l
 	bison -Werror=conflicts-sr -Werror=conflicts-rr --report=all --xml parser.y
 
 	xsltproc /usr/share/bison/xslt/xml2xhtml.xsl parser.xml > parser.html
