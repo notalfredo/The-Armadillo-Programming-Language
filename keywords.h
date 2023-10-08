@@ -32,7 +32,6 @@ typedef enum tokens {
     TOKEN_RETURN,
     TOKEN_FUNC_RETURN,
 
-
     //Lit numbers
     TOKEN_LIT_INT,
     TOKEN_LIT_REAL,
@@ -77,7 +76,6 @@ typedef enum tokens {
     TOKEN_SCOPE,
     TOKEN_CASE,
 
-
     TOKEN_LPAREN,
     TOKEN_RPAREN,
 
@@ -85,7 +83,6 @@ typedef enum tokens {
     TOKEN_RBRACE,
 
     TOKEN_COMMA,
-    
 } tokens;
 
 
