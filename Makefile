@@ -1,11 +1,12 @@
 PROJS  = tokens
 
 #-----------------------------------------------------------------
-CC       = gcc
+CC       = g++
 
 SANFLAGS =
 
-CFLAGS   = -g -Wall -Wextra $(SANFLAGS)
+# Add -Wno-write-strings to suppress string literal warnings
+CFLAGS   = -g -Wall -Wextra -Wno-write-strings $(SANFLAGS)
 LDFLAGS  = $(SANFLAGS)
 LDLIBS   = -lm
 
