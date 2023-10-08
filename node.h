@@ -157,24 +157,28 @@ class NodeIfDeclaration:  public NodeStatement {
 public:
     ExpressionList exprs;
     NodeBlock& body;
+    NodeStatement& elif;
 
     NodeIfDeclaration(
+        ExpressionList& exprs,
+        NodeBlock& body,
+        NodeStatement& elif
+    ): exprs(exprs), body(body), elif(elif) {}
+
+    virtual llvm::Value* codeGen(CodeGenContext& context);
+};
+
+
+class NodeElifDeclaration:  public NodeStatement {
+public:
+    ExpressionList exprs;
+    NodeBlock& body;
+
+
+    NodeElifDeclaration(
         ExpressionList& exprs,
         NodeBlock& body
     ): exprs(exprs), body(body) {}
 
     virtual llvm::Value* codeGen(CodeGenContext& context);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
+};
