@@ -155,15 +155,24 @@ public:
 
 class NodeIfDeclaration:  public NodeStatement {
 public:
+    const int ExprNum;
     ExpressionList exprs;
     NodeBlock& body;
-    NodeStatement& elif;
+    NodeStatement* ChildOfIf;
 
     NodeIfDeclaration(
+        const int ExprNum, 
+        ExpressionList& exprs,
+        NodeBlock& body
+    ): ExprNum(ExprNum), exprs(exprs), body(body) { ChildOfIf = NULL; }
+
+    NodeIfDeclaration(
+        const int ExprNum, 
         ExpressionList& exprs,
         NodeBlock& body,
-        NodeStatement& elif
-    ): exprs(exprs), body(body), elif(elif) {}
+        NodeStatement* ChildOfIf
+    ): ExprNum(ExprNum), exprs(exprs), body(body), ChildOfIf(ChildOfIf) {}
+
 
     virtual llvm::Value* codeGen(CodeGenContext& context);
 };
@@ -173,7 +182,6 @@ class NodeElifDeclaration:  public NodeStatement {
 public:
     ExpressionList exprs;
     NodeBlock& body;
-
 
     NodeElifDeclaration(
         ExpressionList& exprs,
