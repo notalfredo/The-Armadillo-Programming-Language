@@ -126,8 +126,8 @@ stmt
   ;
 
 stmtList
-  : stmt              { $$ = new NodeBlock(); $$->statements.push_back($<stmt>1); }
-  | stmtList ';' stmt { $1->statements.push_back($<stmt>2); }
+  : stmt              { $$ = new NodeBlock(); $$->StmtList.push_back($<stmt>1); }
+  | stmtList ';' stmt { $1->StmtList.push_back($<stmt>2); }
   ;
 
 // breakStmt

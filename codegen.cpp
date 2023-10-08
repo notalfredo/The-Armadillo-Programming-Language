@@ -116,7 +116,7 @@ Value* NodeBinaryOperator::codeGen(CodeGenContext& context)
 	std::cout << "Creating binary operation " << op << endl;
 	Instruction::BinaryOps instr;
 	switch (op) {
-		case TOKEN_BOP_ADD: 	
+		case 0: 	
             instr = Instruction::Add;
             return BinaryOperator::Create(
                 instr,
@@ -125,7 +125,7 @@ Value* NodeBinaryOperator::codeGen(CodeGenContext& context)
                 "",
                 context.currentBlock()
             );
-		case TOKEN_BOP_SUB: 	
+		case 1: 	
             instr = Instruction::Sub;
             return BinaryOperator::Create(
                 instr,
@@ -135,7 +135,7 @@ Value* NodeBinaryOperator::codeGen(CodeGenContext& context)
                 context.currentBlock()
             );
 
-		case TOKEN_BOP_MUL: 		
+		case 2: 		
             instr = Instruction::Mul;
             return BinaryOperator::Create(
                 instr,
@@ -145,7 +145,7 @@ Value* NodeBinaryOperator::codeGen(CodeGenContext& context)
                 context.currentBlock()
             );
 
-        case TOKEN_BOP_DIV: 		
+        case 3: 		
             instr = Instruction::SDiv;
             return BinaryOperator::Create(
                 instr,
