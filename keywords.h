@@ -29,6 +29,8 @@ typedef enum tokens {
 
     //Function
     TOKEN_FUNCTION_DECL,
+    TOKEN_RETURN,
+    TOKEN_FUNC_RETURN,
 
     //Lit numbers
     TOKEN_LIT_INT,
@@ -37,6 +39,7 @@ typedef enum tokens {
 
 
     // Binary operators
+    TOKEN_BOP_ASSIGN,
     TOKEN_BOP_ADD,
     TOKEN_BOP_SUB,
     TOKEN_BOP_MUL,
@@ -50,7 +53,8 @@ typedef enum tokens {
     TOKEN_BOP_GT,
     TOKEN_BOP_GE,
 
-    TOKEN_BOP_ASSIGN,
+    TOKEN_COLON,
+    TOKEN_SEMICOLON,
 
 
     // Unary operators
@@ -58,10 +62,8 @@ typedef enum tokens {
 
 
     // Statements
-    TOKEN_BLOCK,
     TOKEN_BREAK,
     TOKEN_CONTINUE,
-    TOKEN_EXPR,
 
     TOKEN_IF,
     TOKEN_ELIF,
@@ -74,8 +76,13 @@ typedef enum tokens {
     TOKEN_SCOPE,
     TOKEN_CASE,
 
-    TOKEN_RETURN,
+    TOKEN_LPAREN,
+    TOKEN_RPAREN,
 
+    TOKEN_LBRACE,
+    TOKEN_RBRACE,
+
+    TOKEN_COMMA,
 } tokens;
 
 
