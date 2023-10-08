@@ -1,4 +1,5 @@
 #include <iostream>
+#include "keywords.h"
 #include <vector>
 #include <llvm/IR/Value.h>
 
@@ -66,11 +67,11 @@ class NodeBinaryOperator : public NodeExpression {
 public:
     NodeExpression &lhs;   
     NodeExpression &rhs;   
-    int BinaryOperatorType;
+    tokens BinaryOperatorType;
     NodeBinaryOperator( 
                         NodeExpression& lhs, 
                         NodeExpression& rhs, 
-                        int BinaryOperatorType
+                        tokens BinaryOperatorType
     ): lhs(lhs), rhs(rhs), BinaryOperatorType(BinaryOperatorType) {}
 
     virtual llvm::Value* codeGen(CodeGenContext& context);
