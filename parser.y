@@ -121,13 +121,22 @@ contStmt
 
 //-- Declaration -------------------------------------------------
 declStmt
-  : TOKEN_LET TOKEN_ID TOKEN_BOP_ASSIGN TOKEN_LIT_INT {
+  : TOKEN_LET TOKEN_ID ':' TOKEN_INTEGER TOKEN_BOP_ASSIGN TOKEN_LIT_INT {
+    $$ = makeDecl( KIND_INT,  $2, makeIntLit( $6 ) );
+  }
+  | TOKEN_LET TOKEN_ID ':' TOKEN_REAL TOKEN_BOP_ASSIGN TOKEN_LIT_REAL {
+    $$ = makeDecl( KIND_REAL,  $2, makeRealLit( $6 ) );
+  }
+  | TOKEN_LET TOKEN_ID ':' TOKEN_STRING TOKEN_BOP_ASSIGN TOKEN_LIT_STR {
+    $$ = makeDecl( KIND_STRING,  $2, makeStringLit( $6 ) );
+  }
+  | TOKEN_LET TOKEN_ID ':' TOKEN_INTEGER {
     $$ = makeDecl( KIND_INT,  $2, makeIntLit( 0 ) );
   }
-  : TOKEN_LET TOKEN_ID TOKEN_BOP_ASSIGN TOKEN_LIT_REAL {
+  | TOKEN_LET TOKEN_ID ':' TOKEN_REAL {
     $$ = makeDecl( KIND_REAL,  $2, makeRealLit( 0 ) );
   }
-  : TOKEN_LET TOKEN_ID TOKEN_BOP_ASSIGN TOKEN_LIT_STR {
+  | TOKEN_LET TOKEN_ID ':' TOKEN_STRING {
     $$ = makeDecl( KIND_STRING,  $2, makeStringLit( 0 ) );
   }
   ;
@@ -169,6 +178,7 @@ writeStmt
 expr
   : expr '+' expr       { $$ = makeBinOp( KIND_BOP_ADD, $1, $3 ); }
   | expr '-' expr       { $$ = makeBinOp( KIND_BOP_SUB, $1, $3 ); }
+  | expr '*' expr       { $$ = makeBinOp( KIND_BOP_MUL, $1, $3 ); }
   | expr '/' expr       { $$ = makeBinOp( KIND_BOP_DIV, $1, $3 ); }
   ;
 
