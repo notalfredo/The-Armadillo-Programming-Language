@@ -1,7 +1,3 @@
-// Dalio, Brian A.
-// dalioba
-// 2023-04-19
-
 //---- DEFINITIONS  ----------------------------------------------
 %{
 #include <stdarg.h>
