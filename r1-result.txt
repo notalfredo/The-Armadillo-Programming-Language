@@ -1,0 +1,47 @@
+(BLOCK <num:1> <len:4>
+  (DECL <type:"INTEGER"> <id:"l">
+    (INTEGER <type:"INTEGER"> 0)
+  )
+  (DECL <type:"INTEGER"> <id:"m">
+    (INTEGER <type:"INTEGER"> 0)
+  )
+  (DECL <type:"INTEGER"> <id:"n">
+    (INTEGER <type:"INTEGER"> 0)
+  )
+  (REPEAT
+    (BLOCK <num:2> <len:2>
+      (DECL <type:"REAL"> <id:"r">
+        (REAL <type:"REAL"> 0.00000000000000000e+00)
+      )
+      (WRITE <len:3>
+        (STRING <type:"STRING"> "Hooray! ")
+        (BOP_ADD <type:"REAL"> 
+          (ID "r" <scope:2> <type:"REAL">)
+          (ID "n" <scope:1> <type:"INTEGER">)
+        )
+        (STRING <type:"STRING"> "\n")
+      )
+    )
+   UNTIL 
+    (BOP_DIV <type:"INTEGER"> 
+      (BOP_ADD <type:"INTEGER"> 
+        (ID "l" <scope:1> <type:"INTEGER">)
+        (ID "m" <scope:1> <type:"INTEGER">)
+      )
+      (ID "n" <scope:1> <type:"INTEGER">)
+    )
+  )
+)
+
+(SCOPES <len:3>
+  (SCOPE <num:2> <parent:1> <len:1>
+    ( REAL "r" )
+  )
+  (SCOPE <num:1> <parent:0> <len:3>
+    ( INTEGER "n" )
+    ( INTEGER "m" )
+    ( INTEGER "l" )
+  )
+  (SCOPE <num:0> <parent:-1> <len:0>
+  )
+)
