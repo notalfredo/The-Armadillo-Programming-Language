@@ -138,22 +138,22 @@ stmtList
 //-- Declaration -------------------------------------------------
 declStmt
   : TOKEN_LET TOKEN_ID ':' TOKEN_INTEGER TOKEN_BOP_ASSIGN TOKEN_LIT_INT {
-    $$ = new NodeVariableDeclaration( *$1, *$2, $4 );
+    $$ = new NodeVariableDeclaration( *$2, *$4, $6 );
   }
   | TOKEN_LET TOKEN_ID ':' TOKEN_REAL TOKEN_BOP_ASSIGN TOKEN_LIT_REAL {
-    $$ = new NodeVariableDeclaration( *$1, *$2, $4 );
+    $$ = new NodeVariableDeclaration( *$2, *$4, $6 );
   }
   | TOKEN_LET TOKEN_ID ':' TOKEN_STRING TOKEN_BOP_ASSIGN TOKEN_LIT_STR {
-    $$ = new NodeVariableDeclaration( *$1, *$2, $4 );
+    $$ = new NodeVariableDeclaration( *$2, *$4, $6 );
   }
   | TOKEN_LET TOKEN_ID ':' TOKEN_INTEGER {
-    $$ = new NodeVariableDeclaration( *$1, *$2, $4 );
+    $$ = new NodeVariableDeclaration( *$2, *$4, NULL );
   }
   | TOKEN_LET TOKEN_ID ':' TOKEN_REAL {
-    $$ = new NodeVariableDeclaration( *$1, *$2, $4 );
+    $$ = new NodeVariableDeclaration( *$2, *$4, NULL );
   }
   | TOKEN_LET TOKEN_ID ':' TOKEN_STRING {
-    $$ = new NodeVariableDeclaration( *$1, *$2, $4 );
+    $$ = new NodeVariableDeclaration( *$2, *$4, NULL );
   }
   ;
 
