@@ -1,6 +1,6 @@
 CC        = gcc
 
-SANFLAGS  =
+# SANFLAGS  =
 
 CFLAGS    = -g -Wall -Wextra $(SANFLAGS) -DYYDEBUG
 LDFLAGS   = $(SANFLAGS)
@@ -11,8 +11,8 @@ LDLIBS    = -lm
 	$(CC) $(CFLAGS) -c $^
 
 #-----------------------------------------------------------------
-frontEnd : lexer.l parser.y main.c $(SRCFILES)
-	flex --outfile=lexer.yy.c lexer.l
+frontEnd : token.l parser.y main.c $(SRCFILES)
+	flex --outfile=lexer.yy.c token.l
 	bison -Werror=conflicts-sr -Werror=conflicts-rr --report=all --xml parser.y
 
 	xsltproc /usr/share/bison/xslt/xml2xhtml.xsl parser.xml > parser.html
