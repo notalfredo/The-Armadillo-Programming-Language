@@ -89,13 +89,8 @@ start
   ;
 
 block
-  : '{' stmtList semiOpt '}'  { $$ = makeBlock( $2 ); }
+  : '{' stmtList ';' '}'  { $$ = makeBlock( $2 ); }
   | '{' '}'                   { $$ = makeBlock( NULL ); }
-  ;
-
-semiOpt
-  : epsilon
-  | ';'
   ;
 
 //-- Statements --------------------------------------------------
