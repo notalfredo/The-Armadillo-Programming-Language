@@ -1,3 +1,4 @@
+#include "keywords.h"
 #include "node.h"
 #include "codegen.h"
 #include "parser.hpp"
@@ -89,3 +90,177 @@ Value* NodeIdentifier::codeGen(CodeGenContext& context){
             context.currentBlock()
     );
 }
+
+Value* NodeMethodCall::codeGen(CodeGenContext& context) {
+	Function *function = context.module->getFunction(id.name.c_str());
+	if (function == NULL) {
+		std::cerr << "no such function " << id.name << endl;
+	}
+
+	std::vector<Value*> args;
+	ExpressionList::const_iterator it;
+	for (it = arguments.begin(); it != arguments.end(); it++) {
+		args.push_back((**it).codeGen(context));
+	}
+
+	CallInst *call = CallInst::Create(function, makeArrayRef(args), "", context.currentBlock());
+	std::cout << "Creating method call: " << id.name << endl;
+	return call;
+}
+
+
+
+Value* NodeBinaryOperator::codeGen(CodeGenContext& context)
+{
+
+	std::cout << "Creating binary operation " << op << endl;
+	Instruction::BinaryOps instr;
+	switch (op) {
+		case TOKEN_BOP_ADD: 	
+            instr = Instruction::Add;
+            return BinaryOperator::Create(
+                instr,
+                lhs.codeGen(context),
+                rhs.codeGen(context),
+                "",
+                context.currentBlock()
+            );
+		case TOKEN_BOP_SUB: 	
+            instr = Instruction::Sub;
+            return BinaryOperator::Create(
+                instr,
+                lhs.codeGen(context),
+                rhs.codeGen(context),
+                "",
+                context.currentBlock()
+            );
+
+		case TOKEN_BOP_MUL: 		
+            instr = Instruction::Mul;
+            return BinaryOperator::Create(
+                instr,
+                lhs.codeGen(context),
+                rhs.codeGen(context),
+                "",
+                context.currentBlock()
+            );
+
+        case TOKEN_BOP_DIV: 		
+            instr = Instruction::SDiv;
+            return BinaryOperator::Create(
+                instr,
+                lhs.codeGen(context),
+                rhs.codeGen(context),
+                "",
+                context.currentBlock()
+            );
+        case default:
+            std::cout << "DUDE WTF HOW DID YOU FUCK UP" << std::endl;
+            break;
+	}
+	return NULL;
+}
+
+
+Value* NodeAssignment::codeGen(CodeGenContext& context)
+{
+	std::cout << "Creating assignment for " << lhs.name << endl;
+
+
+    llvm::Value* valueFound = context.locals(lhs.name);
+
+	if ( valueFound ) {
+		std::cerr << "undeclared variable " << lhs.name << endl;
+		return NULL;
+	}
+	return new StoreInst(
+        rhs.codeGen(context),
+        valueFound,
+        false,
+        context.currentBlock()
+    );
+}
+
+
+Value* NodeBlock::codeGen(CodeGenContext& context)
+{
+	StatementList::const_iterator it;
+	Value *last = NULL;
+	for (it = statements.begin(); it != statements.end(); it++) {
+		std::cout << "Generating code for " << typeid(**it).name() << endl;
+		last = (**it).codeGen(context);
+	}
+	std::cout << "Creating block" << endl;
+	return last;
+}
+
+
+
+Value* NodeExpressionStatement::codeGen(CodeGenContext& context) {
+	std::cout << "Generating code for " << typeid(expression).name() << endl;
+	return expression.codeGen(context);
+}
+
+Value* NodeReturnStatement::codeGen(CodeGenContext& context) {
+	std::cout << "Generating return code for " << typeid(expression).name() << endl;
+	Value *returnValue = expression.codeGen(context);
+	context.setCurrentReturnValue(returnValue);
+	return returnValue;
+}
+
+Value* NodeVariableDeclaration::codeGen(CodeGenContext& context)
+{
+	std::cout << "Creating variable declaration " << type.name << " " << id.name << endl;
+	AllocaInst *alloc = new AllocaInst(typeOf(type),4, id.name.c_str(), context.currentBlock());
+	context.locals()[id.name] = alloc;
+	if (assignmentExpr != NULL) {
+		NAssignment assn(id, *assignmentExpr);
+		assn.codeGen(context);
+	}
+	return alloc;
+}
+
+Value* NodeExternDeclaration::codeGen(CodeGenContext& context)
+{
+    vector<Type*> argTypes;
+    VariableList::const_iterator it;
+    for (it = arguments.begin(); it != arguments.end(); it++) {
+        argTypes.push_back(typeOf((**it).type));
+    }
+    FunctionType *ftype = FunctionType::get(typeOf(type), makeArrayRef(argTypes), false);
+    Function *function = Function::Create(ftype, GlobalValue::ExternalLinkage, id.name.c_str(), context.module);
+    return function;
+}
+
+Value* NodeFunctionDeclaration::codeGen(CodeGenContext& context)
+{
+	vector<Type*> argTypes;
+	VariableList::const_iterator it;
+	for (it = arguments.begin(); it != arguments.end(); it++) {
+		argTypes.push_back(typeOf((**it).type));
+	}
+	FunctionType *ftype = FunctionType::get(typeOf(type), makeArrayRef(argTypes), false);
+	Function *function = Function::Create(ftype, GlobalValue::InternalLinkage, id.name.c_str(), context.module);
+	BasicBlock *bblock = BasicBlock::Create(MyContext, "entry", function, 0);
+
+	context.pushBlock(bblock);
+
+	Function::arg_iterator argsValues = function->arg_begin();
+    Value* argumentValue;
+
+	for (it = arguments.begin(); it != arguments.end(); it++) {
+		(**it).codeGen(context);
+		
+		argumentValue = &*argsValues++;
+		argumentValue->setName((*it)->id.name.c_str());
+		StoreInst *inst = new StoreInst(argumentValue, context.locals()[(*it)->id.name], false, bblock);
+	}
+	
+	block.codeGen(context);
+	ReturnInst::Create(MyContext, context.getCurrentReturnValue(), bblock);
+
+	context.popBlock();
+	std::cout << "Creating function: " << id.name << endl;
+	return function;
+}
+
