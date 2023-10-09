@@ -4,6 +4,11 @@
 
 
 
+## What exactly is Armadillo?
+Armadillo was a program written by Alfredo, David, Nate. Armadillo was built during hack uta 2023 as a 
+cool little project to mess around with. Altough the project was incomplete most of the proof of concept
+is in the code.
+
 
 ## Valid Armadillo programs
 ```rust
@@ -73,3 +78,15 @@ fn main() {
     }
 }
 ```
+
+
+## References
+Although we did not finish we would have not gotten as far as we did without the following references. Thank you for the authors mentioned below. Finally although not explicit mentioned Dr.Dalio the professor for UT Arlington CSE-4305 (Compilers class) assignments also served as a good reference. 
+
+https://llvm.org/doxygen/index.html
+
+https://llvm.org/docs/tutorial/
+
+https://github.com/lsegal/my_toy_compiler/tree/master
+
+https://llvm.org/docs/tutorial/MyFirstLanguageFrontend/LangImpl03.html#chapter-3-introduction
